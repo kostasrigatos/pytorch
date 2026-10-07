@@ -345,8 +345,24 @@ inline double trigamma(double x) __ubsan_ignore_float_divide_by_zero__ {
     result += 1 / (x * x);
     x += 1;
   }
+  // Asymptotic series: psi_1(x) ~ 1/x + 1/(2x^2) + sum_{k>=1} B_{2k} / x^{2k+1}.
+  // Twelve Bernoulli terms (B_2 .. B_24), highest power of 1/x^2 first for polevl.
+  static const double A[] = {
+      -236364091. / 2730.,  // B_24
+      854513. / 138.,       // B_22
+      -174611. / 330.,      // B_20
+      43867. / 798.,        // B_18
+      -3617. / 510.,        // B_16
+      7. / 6.,              // B_14
+      -691. / 2730.,        // B_12
+      5. / 66.,             // B_10
+      -1. / 30.,            // B_8
+      1. / 42.,             // B_6
+      -1. / 30.,            // B_4
+      1. / 6.,              // B_2
+  };
   const double ixx = 1 / (x*x);
-  result += (1 + 1 / (2*x) + ixx * (1./6 - ixx * (1./30 - ixx * (1./42)))) / x;
+  result += (1 + 1 / (2*x) + ixx * polevl(ixx, A, 11)) / x;
   return sign * result;
 }
 

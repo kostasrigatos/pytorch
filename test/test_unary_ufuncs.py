@@ -18,6 +18,7 @@ from torch.testing._internal.common_device_type import (
     instantiate_device_type_tests,
     largeTensorTest,
     onlyAccelerator,
+    onlyCPU,
     ops,
     precisionOverride,
 )
@@ -711,6 +712,15 @@ class TestUnaryUfuncs(TestCase):
             RuntimeError, r"polygamma\(n, x\) does not support negative n\."
         ):
             torch.polygamma(-1, torch.tensor([1.0, 2.0], device=device))
+
+    @onlyCPU
+    @dtypes(torch.float64)
+    def test_polygamma_accuracy(self, device, dtype):
+        x = torch.tensor([0.5, 1.0, 2.0, -0.5, -1.5], dtype=dtype, device=device)
+        pi_sq = math.pi ** 2
+        expected = torch.tensor([pi_sq / 2, pi_sq / 6, pi_sq / 6 - 1, pi_sq / 2 + 4, pi_sq / 2 + 4 + 4 / 9], dtype=dtype, device=device)
+        actual = torch.polygamma(1, x)
+        torch.testing.assert_close(actual, expected, rtol=1e-14, atol=0)
 
     @dtypes(torch.complex64, torch.complex128)
     def test_abs_angle_complex_to_float(self, device, dtype):
